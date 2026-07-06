@@ -1,0 +1,373 @@
+{
+  "document_name": "lease.txt",
+  "analyzed_at": "2026-07-05T07:59:22.136221Z",
+  "classification": {
+    "document_type": "lease",
+    "confidence": 0.85,
+    "statement": "This appears to be a lease agreement."
+  },
+  "summary": "This document is a rental lease. It covers your rent, deposit, lease term, fees, and responsibilities, and what happens if the lease ends early.",
+  "what_this_means": {
+    "text": "This appears to be a lease agreement. It mentions 7 amount(s) of money. 7 clause(s) are worth reading carefully before you sign or respond. A professional can confirm anything that affects an important decision.",
+    "tone_check": "Written in plain English without professional advice."
+  },
+  "key_details": [
+    {
+      "name": "Monthly rent",
+      "value": "$1,850.00",
+      "confidence": 0.65,
+      "citation": {
+        "quote": "m. 2. RENT. Tenant shall pay monthly rent of $1,850.00, due on the first day of each",
+        "page": 1,
+        "section": null,
+        "char_start": null,
+        "char_end": null
+      },
+      "source_ref": "page 1"
+    },
+    {
+      "name": "Security deposit",
+      "value": "$2,775.00",
+      "confidence": 0.65,
+      "citation": {
+        "quote": "Y DEPOSIT. Tenant shall pay a security deposit of $2,775.00 prior to move-in. A cleaning",
+        "page": 1,
+        "section": null,
+        "char_start": null,
+        "char_end": null
+      },
+      "source_ref": "page 1"
+    },
+    {
+      "name": "Late fee",
+      "value": "$75.00",
+      "confidence": 0.65,
+      "citation": {
+        "quote": "he first day of each month. A late fee of $75.00 applies to any payment receiv",
+        "page": 1,
+        "section": null,
+        "char_start": null,
+        "char_end": null
+      },
+      "source_ref": "page 1"
+    }
+  ],
+  "money": [
+    {
+      "label": "Tenant shall pay monthly rent of",
+      "amount": "$1,850.00",
+      "recurring": true,
+      "citation": {
+        "quote": ". 2. RENT. Tenant shall pay monthly rent of $1,850.00, due on the first day of each month. A late",
+        "page": 1,
+        "section": null,
+        "char_start": null,
+        "char_end": null
+      },
+      "source_ref": "page 1"
+    },
+    {
+      "label": "A late fee of",
+      "amount": "$75.00",
+      "recurring": true,
+      "citation": {
+        "quote": "n the first day of each month. A late fee of $75.00 applies to any payment received after the fi",
+        "page": 1,
+        "section": null,
+        "char_start": null,
+        "char_end": null
+      },
+      "source_ref": "page 1"
+    },
+    {
+      "label": "Tenant shall pay a security deposit of",
+      "amount": "$2,775.00",
+      "recurring": false,
+      "citation": {
+        "quote": "OSIT. Tenant shall pay a security deposit of $2,775.00 prior to move-in. A cleaning fee of $250.00",
+        "page": 1,
+        "section": null,
+        "char_start": null,
+        "char_end": null
+      },
+      "source_ref": "page 1"
+    },
+    {
+      "label": "A cleaning fee of",
+      "amount": "$250.00",
+      "recurring": false,
+      "citation": {
+        "quote": "2,775.00 prior to move-in. A cleaning fee of $250.00 is non-refundable and will be deducted from",
+        "page": 1,
+        "section": null,
+        "char_start": null,
+        "char_end": null
+      },
+      "source_ref": "page 1"
+    },
+    {
+      "label": "An approved pet requires a pet deposit of",
+      "amount": "$500.00",
+      "recurring": true,
+      "citation": {
+        "quote": "l. An approved pet requires a pet deposit of $500.00 and pet rent of $50.00 per month. 6. MAINTE",
+        "page": 1,
+        "section": null,
+        "char_start": null,
+        "char_end": null
+      },
+      "source_ref": "page 1"
+    },
+    {
+      "label": "An approved pet requires a pet deposit of $500.00 and pet rent of",
+      "amount": "$50.00",
+      "recurring": true,
+      "citation": {
+        "quote": "res a pet deposit of $500.00 and pet rent of $50.00 per month. 6. MAINTENANCE. Tenant is respon",
+        "page": 1,
+        "section": null,
+        "char_start": null,
+        "char_end": null
+      },
+      "source_ref": "page 1"
+    },
+    {
+      "label": "Tenant is responsible for all repairs under",
+      "amount": "$200.00",
+      "recurring": true,
+      "citation": {
+        "quote": "Tenant is responsible for all repairs under $200.00, including plumbing clogs, light fixtures, a",
+        "page": 1,
+        "section": null,
+        "char_start": null,
+        "char_end": null
+      },
+      "source_ref": "page 1"
+    }
+  ],
+  "dates": [
+    {
+      "label": "NOT A REAL LEASE.] RESIDENTIAL LEASE AGREEMENT This Lease Agreement is entered i",
+      "date_text": "August 1, 2026",
+      "is_deadline": false,
+      "citation": {
+        "quote": "ENT This Lease Agreement is entered into on August 1, 2026 between Bluestone Property Management LLC (\"",
+        "page": 1,
+        "section": null,
+        "char_start": null,
+        "char_end": null
+      },
+      "source_ref": "page 1"
+    },
+    {
+      "label": "The lease term begins on",
+      "date_text": "September 1, 2026",
+      "is_deadline": false,
+      "citation": {
+        "quote": "tment 3B. 1. TERM. The lease term begins on September 1, 2026 and ends on August 31, 2027. This lease will",
+        "page": 1,
+        "section": null,
+        "char_start": null,
+        "char_end": null
+      },
+      "source_ref": "page 1"
+    },
+    {
+      "label": "The lease term begins on September 1, 2026 and ends on",
+      "date_text": "August 31, 2027",
+      "is_deadline": false,
+      "citation": {
+        "quote": "term begins on September 1, 2026 and ends on August 31, 2027. This lease will automatically renew for suc",
+        "page": 1,
+        "section": null,
+        "char_start": null,
+        "char_end": null
+      },
+      "source_ref": "page 1"
+    }
+  ],
+  "risks": [
+    {
+      "title": "Automatic Renewal",
+      "explanation": "This document appears to renew automatically unless you cancel before a specific date.",
+      "why_it_matters": "You could be charged again or locked in for another term if you miss the cancellation window.",
+      "question_to_ask": "What is the exact deadline to cancel before renewal?",
+      "severity": "high",
+      "confidence": 0.6,
+      "citation": {
+        "quote": "and ends on August 31, 2027. This lease will automatically renew for successive twelve-month terms unless eit",
+        "page": 1,
+        "section": null,
+        "char_start": null,
+        "char_end": null
+      },
+      "source_ref": "page 1"
+    },
+    {
+      "title": "Early Termination Fee",
+      "explanation": "Ending this agreement before its end date appears to carry a cost or penalty.",
+      "why_it_matters": "Leaving early could be expensive; the amount and conditions matter.",
+      "question_to_ask": "What exactly would I owe if I ended this agreement early?",
+      "severity": "high",
+      "confidence": 0.6,
+      "citation": {
+        "quote": "e deducted from the deposit at move-out. 4. EARLY TERMINATION. If Tenant terminates the lease early, Tenan",
+        "page": 1,
+        "section": null,
+        "char_start": null,
+        "char_end": null
+      },
+      "source_ref": "page 1"
+    },
+    {
+      "title": "Arbitration Clause",
+      "explanation": "Disputes appear to go to arbitration instead of court.",
+      "why_it_matters": "This can limit how you resolve disagreements, including giving up a jury trial or class action.",
+      "question_to_ask": "Can I opt out of the arbitration clause, and how?",
+      "severity": "high",
+      "confidence": 0.6,
+      "citation": {
+        "quote": "nder this lease shall be resolved by binding arbitration. Tenant hereby waives the right to a jury",
+        "page": 1,
+        "section": null,
+        "char_start": null,
+        "char_end": null
+      },
+      "source_ref": "page 1"
+    },
+    {
+      "title": "Waiver of Rights",
+      "explanation": "This document appears to ask you to give up certain rights or claims.",
+      "why_it_matters": "Waivers can be broad; it's worth knowing exactly what you would be giving up.",
+      "question_to_ask": "Which specific rights am I waiving by agreeing to this?",
+      "severity": "high",
+      "confidence": 0.6,
+      "citation": {
+        "quote": "l be resolved by binding arbitration. Tenant hereby waives the right to a jury trial. 10. RENEWAL NOTI",
+        "page": 1,
+        "section": null,
+        "char_start": null,
+        "char_end": null
+      },
+      "source_ref": "page 1"
+    },
+    {
+      "title": "Late Fee",
+      "explanation": "A fee appears to apply if a payment is made after the due date.",
+      "why_it_matters": "Missing a due date could cost you extra money on top of what you already owe.",
+      "question_to_ask": "How much is the late fee, and is there a grace period?",
+      "severity": "medium",
+      "confidence": 0.6,
+      "citation": {
+        "quote": "50.00, due on the first day of each month. A late fee of $75.00 applies to any payment received af",
+        "page": 1,
+        "section": null,
+        "char_start": null,
+        "char_end": null
+      },
+      "source_ref": "page 1"
+    },
+    {
+      "title": "Non-Refundable Payment",
+      "explanation": "At least one payment appears to be non-refundable.",
+      "why_it_matters": "You may not get this money back even if circumstances change.",
+      "question_to_ask": "Under what conditions, if any, is this payment refundable?",
+      "severity": "medium",
+      "confidence": 0.6,
+      "citation": {
+        "quote": "ior to move-in. A cleaning fee of $250.00 is non-refundable and will be deducted from the deposit at mov",
+        "page": 1,
+        "section": null,
+        "char_start": null,
+        "char_end": null
+      },
+      "source_ref": "page 1"
+    },
+    {
+      "title": "Broad Liability Language",
+      "explanation": "This document appears to shift responsibility for certain losses onto you or away from the other party.",
+      "why_it_matters": "You could be responsible for costs you didn't expect.",
+      "question_to_ask": "Can you give examples of situations where I would be responsible under this clause?",
+      "severity": "medium",
+      "confidence": 0.6,
+      "citation": {
+        "quote": "s, and appliance maintenance. Landlord shall not be liable for damage to Tenant's personal property. 7. GU",
+        "page": 1,
+        "section": null,
+        "char_start": null,
+        "char_end": null
+      },
+      "source_ref": "page 1"
+    }
+  ],
+  "actions": [
+    {
+      "action": "Read the 'Automatic Renewal' clause carefully and ask about it before agreeing.",
+      "priority": "high",
+      "due_date": null,
+      "reason": "You could be charged again or locked in for another term if you miss the cancellation window.",
+      "source_ref": "page 1"
+    },
+    {
+      "action": "Read the 'Early Termination Fee' clause carefully and ask about it before agreeing.",
+      "priority": "high",
+      "due_date": null,
+      "reason": "Leaving early could be expensive; the amount and conditions matter.",
+      "source_ref": "page 1"
+    },
+    {
+      "action": "Read the 'Arbitration Clause' clause carefully and ask about it before agreeing.",
+      "priority": "high",
+      "due_date": null,
+      "reason": "This can limit how you resolve disagreements, including giving up a jury trial or class action.",
+      "source_ref": "page 1"
+    },
+    {
+      "action": "Read the 'Waiver of Rights' clause carefully and ask about it before agreeing.",
+      "priority": "high",
+      "due_date": null,
+      "reason": "Waivers can be broad; it's worth knowing exactly what you would be giving up.",
+      "source_ref": "page 1"
+    },
+    {
+      "action": "Save a copy of this document for your records.",
+      "priority": "low",
+      "due_date": null,
+      "reason": "You may need to refer back to the exact wording later.",
+      "source_ref": "Source reference unavailable"
+    }
+  ],
+  "questions": [
+    {
+      "text": "What is the exact deadline to cancel before renewal?",
+      "context": "Automatic Renewal"
+    },
+    {
+      "text": "What exactly would I owe if I ended this agreement early?",
+      "context": "Early Termination Fee"
+    },
+    {
+      "text": "Can I opt out of the arbitration clause, and how?",
+      "context": "Arbitration Clause"
+    },
+    {
+      "text": "Which specific rights am I waiving by agreeing to this?",
+      "context": "Waiver of Rights"
+    },
+    {
+      "text": "How much is the late fee, and is there a grace period?",
+      "context": "Late Fee"
+    },
+    {
+      "text": "Under what conditions, if any, is this payment refundable?",
+      "context": "Non-Refundable Payment"
+    },
+    {
+      "text": "Can you give examples of situations where I would be responsible under this clause?",
+      "context": "Broad Liability Language"
+    }
+  ],
+  "overall_confidence": 0.75,
+  "engine": "heuristic (local, offline)",
+  "disclaimer": "This explanation is for understanding only. It is not legal, medical, financial, or professional advice, and it is not a replacement for a qualified professional. For important decisions, consult a lawyer, doctor, accountant, financial advisor, insurance agent, or other relevant expert."
+}

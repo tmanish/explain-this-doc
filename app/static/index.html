@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Explain This Document Like I'm Human</title>
+<style>
+:root{
+  --bg:#101318; --panel:#161b22; --panel-2:#1c222b; --line:#262d38;
+  --text:#e8eaed; --muted:#9aa4b2; --faint:#6b7583;
+  --accent:#7fbfb0; --accent-dim:#2a3b38;
+  --high:#c97b6e; --med:#d9a05b; --low:#8a94a3;
+  --mono:'DM Mono','SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;
+  --sans:'DM Sans','Segoe UI',system-ui,-apple-system,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.55}
+button{font-family:var(--sans);cursor:pointer}
+a{color:var(--accent)}
+
+header{display:flex;align-items:center;gap:16px;padding:14px 24px;border-bottom:1px solid var(--line)}
+header h1{font-size:16px;font-weight:600;letter-spacing:.2px}
+header .sub{color:var(--faint);font-size:12.5px}
+header .engine{margin-left:auto;font-family:var(--mono);font-size:11.5px;color:var(--muted);
+  border:1px solid var(--line);border-radius:20px;padding:4px 12px}
+
+.intake{max-width:820px;margin:48px auto;padding:0 24px}
+.intake h2{font-size:26px;font-weight:600;margin-bottom:8px}
+.intake p.lead{color:var(--muted);margin-bottom:28px;max-width:60ch}
+.dropzone{border:1.5px dashed var(--line);border-radius:14px;padding:38px;text-align:center;
+  background:var(--panel);transition:border-color .2s}
+.dropzone.drag{border-color:var(--accent)}
+.dropzone strong{display:block;margin-bottom:6px}
+.dropzone span{color:var(--faint);font-size:13px}
+.row{display:flex;gap:12px;margin-top:16px;flex-wrap:wrap;align-items:center}
+.btn{background:var(--panel-2);border:1px solid var(--line);color:var(--text);
+  border-radius:9px;padding:9px 16px;font-size:13.5px}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#0d1412;font-weight:600}
+.btn:disabled{opacity:.45;cursor:default}
+textarea{width:100%;min-height:150px;background:var(--panel);border:1px solid var(--line);
+  border-radius:12px;color:var(--text);padding:14px;font-family:var(--mono);font-size:13px;
+  resize:vertical;margin-top:16px;display:none}
+label.toggle{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px;user-select:none}
+.privacy{margin-top:26px;color:var(--faint);font-size:12.5px;max-width:65ch}
+.demo-chips{margin-top:32px}
+.demo-chips h3{font-size:12px;text-transform:uppercase;letter-spacing:1.2px;color:var(--faint);margin-bottom:10px}
+.chip{display:inline-block;margin:0 8px 8px 0;background:var(--panel);border:1px solid var(--line);
+  border-radius:20px;padding:7px 15px;font-size:13px;color:var(--muted)}
+.chip:hover{color:var(--text);border-color:var(--accent)}
+
+.workspace{display:none;grid-template-columns:minmax(320px,44%) 1fr;gap:0;height:calc(100vh - 61px)}
+.doc-pane{border-right:1px solid var(--line);overflow-y:auto;padding:26px 28px;position:relative}
+.doc-pane h3, .results h3{font-size:12px;text-transform:uppercase;letter-spacing:1.2px;color:var(--faint);margin-bottom:14px}
+.doc-text{font-family:var(--mono);font-size:12.5px;line-height:1.75;color:var(--muted);white-space:pre-wrap}
+.doc-text::selection{background:var(--accent-dim);color:var(--text)}
+.results{overflow-y:auto;padding:26px 30px}
+
+.card{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:20px 22px;margin-bottom:16px}
+.card h4{font-size:13px;font-weight:600;color:var(--accent);text-transform:none;
+  letter-spacing:.3px;margin-bottom:10px}
+.card p{color:var(--text)}
+.type-line{font-size:17px;font-weight:600;margin-bottom:4px}
+.conf{font-family:var(--mono);font-size:11.5px;color:var(--faint)}
+.kv{display:flex;justify-content:space-between;gap:14px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
+.kv:last-child{border-bottom:none}
+.kv .k{color:var(--muted)}
+.kv .v{font-family:var(--mono);font-size:13px;text-align:right}
+.kv .v em{font-style:normal;color:var(--faint);font-size:11px;display:block}
+.risk{border-left:3px solid var(--low);padding:12px 16px;margin-bottom:12px;
+  background:var(--panel-2);border-radius:0 10px 10px 0}
+.risk.high{border-left-color:var(--high)}
+.risk.medium{border-left-color:var(--med)}
+.risk h5{font-size:14px;margin-bottom:5px;display:flex;gap:10px;align-items:baseline}
+.risk .sev{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--faint)}
+.risk p{font-size:13.5px;color:var(--muted);margin-bottom:5px}
+.risk .ask{color:var(--text);font-size:13.5px}
+.cite{display:inline-block;margin-top:7px;font-family:var(--mono);font-size:11px;color:var(--faint);
+  border:1px solid var(--line);border-radius:6px;padding:3px 8px;max-width:100%;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
+.cite:hover{color:var(--accent);border-color:var(--accent)}
+ul.plain{list-style:none}
+ul.plain li{padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
+ul.plain li:last-child{border-bottom:none}
+ul.plain li .why{display:block;color:var(--faint);font-size:12.5px}
+.check{display:flex;gap:11px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--line)}
+.check:last-child{border-bottom:none}
+.check input{margin-top:4px;accent-color:var(--accent)}
+.check .pri{font-family:var(--mono);font-size:10px;letter-spacing:1px;border-radius:5px;
+  padding:2px 7px;margin-right:6px}
+.pri.high{background:#3a2723;color:var(--high)} .pri.medium{background:#39301f;color:var(--med)}
+.pri.low{background:#242a33;color:var(--low)}
+.check .reason{color:var(--faint);font-size:12.5px;display:block}
+.disclaimer{color:var(--faint);font-size:12px;line-height:1.6;padding:4px 2px 40px}
+.warn{background:#2b2418;border:1px solid #4a3d22;color:var(--med);border-radius:10px;
+  padding:10px 14px;font-size:13px;margin-bottom:16px}
+
+.popover{position:fixed;z-index:40;background:var(--panel-2);border:1px solid var(--line);
+  border-radius:11px;box-shadow:0 10px 30px rgba(0,0,0,.5);display:none;overflow:hidden}
+.popover button{display:block;width:100%;text-align:left;background:none;border:none;
+  color:var(--text);padding:9px 16px;font-size:13px}
+.popover button:hover{background:var(--accent-dim)}
+.explain-out{position:fixed;z-index:41;bottom:22px;right:26px;max-width:430px;background:var(--panel-2);
+  border:1px solid var(--accent);border-radius:13px;padding:16px 18px;display:none;
+  box-shadow:0 14px 40px rgba(0,0,0,.55)}
+.explain-out h5{font-size:12px;color:var(--accent);margin-bottom:7px;text-transform:uppercase;letter-spacing:1px}
+.explain-out p{font-size:13.5px;color:var(--text)}
+.explain-out .close{position:absolute;top:8px;right:12px;background:none;border:none;color:var(--faint);font-size:16px}
+.spinner{display:none;color:var(--muted);font-size:13.5px;padding:20px 0}
+.spinner.on{display:block}
+@media (max-width:900px){.workspace{grid-template-columns:1fr;height:auto}
+  .doc-pane{max-height:38vh;border-right:none;border-bottom:1px solid var(--line)}}
+@media (prefers-reduced-motion: no-preference){.card{animation:rise .3s ease both}
+  @keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Explain This Document Like I'm Human</h1>
+    <div class="sub">Give me the document. I'll tell you what matters, what it means, and what to look at carefully.</div>
+  </div>
+  <div class="engine" id="engine">checking engine...</div>
+</header>
+
+<section class="intake" id="intake">
+  <h2>What paperwork is confusing you today?</h2>
+  <p class="lead">Upload a lease, medical bill, insurance policy, bank notice, employment agreement,
+  or any document you're expected to understand. You'll get a plain-English breakdown:
+  what it says, the money and deadlines in it, the clauses to check carefully, and the
+  questions worth asking before you sign or respond.</p>
+
+  <div class="dropzone" id="dropzone">
+    <strong>Drop a file here or click to choose</strong>
+    <span>PDF, image, scan, or text. Files up to 20 MB. Nothing is stored unless you say so.</span>
+    <input type="file" id="fileInput" hidden accept=".pdf,.png,.jpg,.jpeg,.webp,.tiff,.txt,.md">
+  </div>
+
+  <div class="row">
+    <button class="btn" id="pasteBtn">Paste text instead</button>
+    <label class="toggle"><input type="checkbox" id="redactToggle"> Mask sensitive details before analysis</label>
+  </div>
+  <textarea id="pasteArea" placeholder="Paste the document text here..."></textarea>
+  <div class="row"><button class="btn primary" id="analyzePaste" style="display:none">Explain this document</button></div>
+
+  <div class="demo-chips">
+    <h3>Or try a sample document</h3>
+    <div id="demoList"></div>
+    <div class="sub" style="color:var(--faint);font-size:12px;margin-top:6px">Samples are synthetic. No real people, accounts, or companies.</div>
+  </div>
+
+  <p class="privacy">Privacy: documents are processed in memory and not stored unless you opt in.
+  Local mode keeps everything on this machine. This tool explains documents; it does not give
+  legal, medical, financial, or professional advice.</p>
+  <div class="spinner" id="spinner">Reading the document...</div>
+</section>
+
+<main class="workspace" id="workspace">
+  <div class="doc-pane">
+    <h3 id="docTitle">Document</h3>
+    <div class="sub" style="color:var(--faint);font-size:12px;margin-bottom:14px">
+      Select any text to explain it, check if it's normal, or see the risks.</div>
+    <div class="doc-text" id="docText"></div>
+  </div>
+  <div class="results" id="resultsPane"></div>
+</main>
+
+<div class="popover" id="popover">
+  <button data-mode="explain">Explain this section</button>
+  <button data-mode="rewrite">Rewrite in simple English</button>
+  <button data-mode="is_this_normal">Is this normal?</button>
+  <button data-mode="risks">What are the risks?</button>
+  <button data-mode="what_to_ask">What should I ask?</button>
+</div>
+
+<div class="explain-out" id="explainOut">
+  <button class="close" id="explainClose">&times;</button>
+  <h5 id="explainMode">Explanation</h5>
+  <p id="explainText"></p>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+let current = null;          // last AnalyzeOut
+let currentType = "unknown";
+
+const MODE_LABELS = {explain:"Explanation", rewrite:"In simple English",
+  is_this_normal:"Is this normal?", risks:"Possible risks", what_to_ask:"Questions to ask"};
+
+fetch("/api/health").then(r=>r.json()).then(d=>{$("engine").textContent = d.engine;})
+  .catch(()=>{$("engine").textContent = "engine unavailable";});
+
+fetch("/api/demo").then(r=>r.json()).then(list=>{
+  $("demoList").innerHTML = list.map(d=>`<button class="chip" data-id="${d.id}">${d.name}</button>`).join("");
+  $("demoList").querySelectorAll(".chip").forEach(b=>b.onclick=()=>runDemo(b.dataset.id));
+});
+
+// ---- intake wiring ----
+const dz = $("dropzone");
+dz.onclick = ()=> $("fileInput").click();
+dz.ondragover = e=>{e.preventDefault(); dz.classList.add("drag");};
+dz.ondragleave = ()=> dz.classList.remove("drag");
+dz.ondrop = e=>{e.preventDefault(); dz.classList.remove("drag");
+  if(e.dataTransfer.files[0]) uploadFile(e.dataTransfer.files[0]);};
+$("fileInput").onchange = e=>{ if(e.target.files[0]) uploadFile(e.target.files[0]); };
+$("pasteBtn").onclick = ()=>{ $("pasteArea").style.display="block"; $("analyzePaste").style.display="inline-block"; $("pasteArea").focus(); };
+$("analyzePaste").onclick = ()=> analyzeText($("pasteArea").value);
+
+function busy(on){ $("spinner").classList.toggle("on", on); }
+
+async function uploadFile(file){
+  busy(true);
+  const fd = new FormData();
+  fd.append("file", file);
+  fd.append("redact_first", $("redactToggle").checked);
+  fd.append("store", "false");
+  try{
+    const r = await fetch("/api/analyze/upload", {method:"POST", body:fd});
+    handle(await ok(r), null);
+  }catch(err){ alert(err.message); } finally{ busy(false); }
+}
+
+async function analyzeText(text){
+  if(!text.trim()){ alert("Paste some text first."); return; }
+  busy(true);
+  try{
+    const r = await fetch("/api/analyze/text", {method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({text, redact_first: $("redactToggle").checked})});
+    handle(await ok(r), text);
+  }catch(err){ alert(err.message); } finally{ busy(false); }
+}
+
+async function runDemo(id){
+  busy(true);
+  try{
+    const r = await fetch(`/api/demo/${id}`, {method:"POST"});
+    handle(await ok(r), null, id);
+  }catch(err){ alert(err.message); } finally{ busy(false); }
+}
+
+async function ok(r){
+  if(!r.ok){ const d = await r.json().catch(()=>({detail:r.statusText}));
+    throw new Error(d.detail || "Request failed"); }
+  return r.json();
+}
+
+// ---- rendering ----
+function esc(s){ const d=document.createElement("div"); d.textContent=s??""; return d.innerHTML; }
+
+function handle(data, rawText, demoId){
+  current = data; currentType = data.result.classification.document_type;
+  $("intake").style.display = "none";
+  $("workspace").style.display = "grid";
+  $("docTitle").textContent = data.result.document_name;
+  $("docText").textContent = data.document_text || rawText ||
+    "(No readable text view is available for this file.)";
+  render(data);
+}
+
+function render(data){
+  const r = data.result;
+  const pane = $("resultsPane");
+  const warn = (data.warnings||[]).map(w=>`<div class="warn">${esc(w)}</div>`).join("");
+  const conf = Math.round(r.overall_confidence*100);
+
+  pane.innerHTML = `
+    ${warn}
+    <div class="card">
+      <div class="type-line">${esc(r.classification.statement)}</div>
+      <div class="conf">type confidence ${Math.round(r.classification.confidence*100)}% &middot; overall extraction confidence ${conf}% &middot; ${esc(r.engine)}</div>
+    </div>
+
+    <div class="card"><h4>What this document says</h4><p>${esc(r.summary)}</p></div>
+    <div class="card"><h4>What this means for you</h4><p>${esc(r.what_this_means.text)}</p></div>
+
+    ${r.key_details.length ? `<div class="card"><h4>What matters most</h4>
+      ${r.key_details.map(f=>`<div class="kv"><span class="k">${esc(f.name)}</span>
+        <span class="v">${esc(f.value)}<em>${Math.round(f.confidence*100)}% &middot; ${esc(f.source_ref)}</em></span></div>`).join("")}
+    </div>`:""}
+
+    ${r.money.length ? `<div class="card"><h4>Money mentioned</h4>
+      ${r.money.map(m=>`<div class="kv"><span class="k">${esc(m.label)}${m.recurring?" (recurring)":""}</span>
+        <span class="v">${esc(m.amount)}<em>${esc(m.source_ref)}</em></span></div>`).join("")}
+    </div>`:""}
+
+    ${r.dates.length ? `<div class="card"><h4>Dates and deadlines</h4>
+      ${r.dates.map(d=>`<div class="kv"><span class="k">${esc(d.label)}${d.is_deadline?" &middot; possible deadline":""}</span>
+        <span class="v">${esc(d.date_text)}<em>${esc(d.source_ref)}</em></span></div>`).join("")}
+    </div>`:""}
+
+    ${r.risks.length ? `<div class="card"><h4>Things to check carefully</h4>
+      ${r.risks.map(risk=>`
+        <div class="risk ${risk.severity}">
+          <h5>${esc(risk.title)} <span class="sev">${risk.severity}</span></h5>
+          <p>${esc(risk.explanation)}</p>
+          <p>${esc(risk.why_it_matters)}</p>
+          <div class="ask">Ask: &ldquo;${esc(risk.question_to_ask)}&rdquo;</div>
+          ${risk.citation ? `<span class="cite" title="Click to explore this snippet" data-q="${esc(risk.citation.quote)}">&ldquo;${esc(risk.citation.quote)}&rdquo;</span>`:""}
+        </div>`).join("")}
+    </div>`:""}
+
+    ${r.questions.length ? `<div class="card"><h4>Questions you should ask before you sign or respond</h4>
+      <ul class="plain">${r.questions.map(q=>`<li>${esc(q.text)}${q.context?`<span class="why">${esc(q.context)}</span>`:""}</li>`).join("")}</ul>
+    </div>`:""}
+
+    ${r.actions.length ? `<div class="card"><h4>Action checklist</h4>
+      ${r.actions.map(a=>`<div class="check"><input type="checkbox">
+        <div><span class="pri ${a.priority}">${a.priority}</span>${esc(a.action)}
+        ${a.due_date?` <strong style="font-family:var(--mono);font-size:12px">${esc(a.due_date)}</strong>`:""}
+        <span class="reason">${esc(a.reason)}</span></div></div>`).join("")}
+    </div>`:""}
+
+    <div class="row" style="margin:4px 0 18px">
+      <button class="btn" id="dlMd">Download Markdown report</button>
+      <button class="btn" id="dlJson">Download JSON</button>
+      <button class="btn" id="newDoc">Explain another document</button>
+    </div>
+    <p class="disclaimer">${esc(r.disclaimer)}</p>`;
+
+  pane.querySelectorAll(".cite").forEach(c=>c.onclick=()=>explain(c.dataset.q, "explain"));
+  $("dlMd").onclick = downloadMarkdown;
+  $("dlJson").onclick = ()=>download(JSON.stringify(r,null,2), `${r.document_name}.analysis.json`, "application/json");
+  $("newDoc").onclick = ()=>{ $("workspace").style.display="none"; $("intake").style.display="block"; };
+}
+
+async function downloadMarkdown(){
+  const r = await fetch("/api/report/markdown", {method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({result: current.result})});
+  download(await r.text(), `${current.result.document_name}.report.md`, "text/markdown");
+}
+
+function download(content, name, type){
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([content], {type}));
+  a.download = name; a.click(); URL.revokeObjectURL(a.href);
+}
+
+// ---- select-to-explain ----
+let selected = "";
+document.addEventListener("mouseup", e=>{
+  const pop = $("popover");
+  if(pop.contains(e.target)) return;
+  const sel = window.getSelection();
+  const text = sel ? sel.toString().trim() : "";
+  const inDoc = sel && sel.anchorNode && $("docText").contains(sel.anchorNode);
+  if(text.length > 8 && inDoc){
+    selected = text;
+    pop.style.display = "block";
+    pop.style.left = Math.min(e.clientX, window.innerWidth-240) + "px";
+    pop.style.top = (e.clientY + 12) + "px";
+  } else { pop.style.display = "none"; }
+});
+$("popover").querySelectorAll("button").forEach(b=>b.onclick=()=>{
+  $("popover").style.display="none"; explain(selected, b.dataset.mode);
+});
+$("explainClose").onclick = ()=> $("explainOut").style.display="none";
+
+async function explain(passage, mode){
+  if(!passage) return;
+  $("explainMode").textContent = MODE_LABELS[mode] || "Explanation";
+  $("explainText").textContent = "Thinking...";
+  $("explainOut").style.display = "block";
+  try{
+    const r = await fetch("/api/explain", {method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({passage, mode, document_type: currentType})});
+    const d = await ok(r);
+    $("explainText").textContent = d.explanation;
+  }catch(err){ $("explainText").textContent = err.message; }
+}
+</script>
+</body>
+</html>

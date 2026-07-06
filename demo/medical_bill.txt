@@ -1,0 +1,30 @@
+[SYNTHETIC SAMPLE DOCUMENT FOR DEMO PURPOSES. NOT A REAL BILL.]
+
+RIVERBEND MEDICAL CENTER
+Patient Billing Statement
+
+Patient: Jordan Avery
+Statement Date: June 15, 2026
+Date of Service: May 22, 2026
+Provider: Dr. S. Whitfield, Internal Medicine
+
+CHARGES
+Office visit, established patient (CPT 99214) ......... $310.00
+Comprehensive metabolic panel (CPT 80053) ............. $145.00
+Comprehensive metabolic panel (CPT 80053) ............. $145.00
+Venipuncture (CPT 36415) .............................. $28.00
+
+Total Billed: $628.00
+Insurance Paid: $402.00
+Insurance Adjustment: $86.00
+Patient Responsibility: $140.00
+
+Payment is due by July 20, 2026. A late charge of $15.00 applies to
+balances unpaid after the due date. Unpaid balances may be referred to
+a collection agency after ninety (90) days.
+
+Payment plans are available. Contact the billing department at the
+number on your statement to discuss options or to dispute a charge.
+
+This is not a bill from your insurance company. Please compare this
+statement with your Explanation of Benefits.
