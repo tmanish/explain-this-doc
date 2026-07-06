@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import difflib
 import logging
+from concurrent.futures import ThreadPoolExecutor
 
 from app.ai import heuristic, prompts
 from app.ai.providers import LLMProvider, get_provider
@@ -104,21 +105,29 @@ class LLMEngine:
             or "I'm not fully sure what type of document this is, but I can still explain the contents.",
         )
 
-        summary_raw = self.provider.complete_json(
-            prompts.render(prompts.SUMMARY_PROMPT, document_type=dtype.value, document_text=text)
-        )
-        extract_raw = self.provider.complete_json(
-            prompts.render(prompts.EXTRACT_PROMPT, document_type=dtype.value, document_text=text)
-        )
-        risk_raw = self.provider.complete_json(
-            prompts.render(prompts.RISK_PROMPT, document_type=dtype.value, document_text=text)
-        )
-        checklist_raw = self.provider.complete_json(
-            prompts.render(prompts.CHECKLIST_PROMPT, document_type=dtype.value, document_text=text)
-        )
-        questions_raw = self.provider.complete_json(
-            prompts.render(prompts.QUESTIONS_PROMPT, document_type=dtype.value, document_text=text)
-        )
+        # The five post-classification prompts are independent; run them
+        # concurrently so a full analysis takes one round-trip, not five.
+        def call(template: str) -> dict:
+            return self.provider.complete_json(
+                prompts.render(template, document_type=dtype.value, document_text=text)
+            )
+
+        with ThreadPoolExecutor(max_workers=5) as pool:
+            futures = {
+                name: pool.submit(call, template)
+                for name, template in (
+                    ("summary", prompts.SUMMARY_PROMPT),
+                    ("extract", prompts.EXTRACT_PROMPT),
+                    ("risk", prompts.RISK_PROMPT),
+                    ("checklist", prompts.CHECKLIST_PROMPT),
+                    ("questions", prompts.QUESTIONS_PROMPT),
+                )
+            }
+        summary_raw = futures["summary"].result()
+        extract_raw = futures["extract"].result()
+        risk_raw = futures["risk"].result()
+        checklist_raw = futures["checklist"].result()
+        questions_raw = futures["questions"].result()
 
         fields = []
         for f in extract_raw.get("fields", []):

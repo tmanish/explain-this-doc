@@ -85,6 +85,14 @@ def test_upload_txt():
     assert r.status_code == 200
 
 
+def test_upload_corrupt_pdf_rejected():
+    r = client.post(
+        "/api/analyze/upload",
+        files={"file": ("broken.pdf", b"%PDF-1.7 garbage", "application/pdf")},
+    )
+    assert r.status_code == 422
+
+
 def test_redact_endpoint():
     r = client.post("/api/redact", json={"text": "Call (704) 555-0182"})
     assert r.status_code == 200

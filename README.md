@@ -55,17 +55,19 @@ Two engines, one contract. If no LLM provider is configured (the default), every
 
 ## Tech stack
 
-- Python 3.12, FastAPI, Pydantic v2
+- Python 3.10+ (3.12 recommended), FastAPI, Pydantic v2
 - PyMuPDF for PDF extraction, pytesseract (optional) for scans and images
 - Provider adapters: Anthropic, OpenAI, Ollama, or none (local mode)
 - Single-file vanilla JS frontend, dark mode, no external dependencies
-- pytest, 31 tests
+- pytest, 33 tests
 
 ## Screenshots
 
 *(placeholder: intake screen, lease analysis, select-to-explain popover)*
 
 ## Setup
+
+Requires Python 3.10 or newer (3.12 recommended).
 
 ```bash
 git clone https://github.com/tmanish/explain-this-doc
@@ -81,7 +83,7 @@ Open http://localhost:8000. Local mode works immediately; try the five built-in 
 ```bash
 export ETD_PROVIDER=anthropic   # or openai, ollama
 export ANTHROPIC_API_KEY=sk-...
-# optional: export ETD_MODEL=claude-sonnet-4-6
+# optional: export ETD_MODEL=claude-sonnet-5
 ```
 
 **OCR for scanned documents (optional):**
@@ -132,6 +134,7 @@ Interactive API docs at `/docs`. Example output for the sample lease is in [`exa
 - Documents are processed in memory and are **not stored** unless you opt in per request (`store=true`). Stored documents can be deleted with one call.
 - `ETD_PROVIDER=none` (the default) keeps every byte on your machine.
 - Redaction mode masks SSNs, credit card numbers (Luhn-validated), phone numbers, emails, street addresses, and policy/claim/account/patient IDs before analysis or export.
+- The server is single-user and has no authentication: anyone who can reach the port can use it, including reading documents stored with `store=true`. Run it on localhost (the default) or behind your own auth; don't expose it directly to a network.
 
 ## Safety disclaimer
 
@@ -149,6 +152,7 @@ This software explains documents for understanding only. It is not legal, medica
 ## Tests
 
 ```bash
+pip install -r requirements-dev.txt
 pytest
 ```
 

@@ -36,6 +36,10 @@ class ParsedDocument:
         return None
 
 
+class ParseError(ValueError):
+    """The uploaded bytes could not be decoded as the claimed format."""
+
+
 PDF_MAGIC = b"%PDF"
 IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp", ".tiff", ".bmp", ".gif"}
 MIN_CHARS_BEFORE_OCR = 40  # per page; below this we assume a scan
@@ -64,7 +68,14 @@ def _parse_pdf(data: bytes, filename: str) -> ParsedDocument:
     import fitz  # PyMuPDF
 
     doc = ParsedDocument(filename=filename, source="pdf")
-    with fitz.open(stream=data, filetype="pdf") as pdf:
+    try:
+        pdf = fitz.open(stream=data, filetype="pdf")
+    except Exception as exc:
+        raise ParseError(
+            "This file could not be read as a PDF. It may be corrupt or "
+            "mislabeled; try re-exporting it or pasting the text instead."
+        ) from exc
+    with pdf:
         for i, page in enumerate(pdf, start=1):
             text = page.get_text("text").strip()
             if len(text) < MIN_CHARS_BEFORE_OCR:
@@ -101,16 +112,22 @@ def _parse_image(data: bytes, filename: str) -> ParsedDocument:
     try:
         import pytesseract
         from PIL import Image
-
-        img = Image.open(io.BytesIO(data))
-        text = pytesseract.image_to_string(img).strip()
-        doc.pages.append(ParsedPage(number=1, text=text))
-        if not text:
-            doc.warnings.append("OCR found no readable text in this image.")
     except ImportError:
         doc.pages.append(ParsedPage(number=1, text=""))
         doc.warnings.append(
             "Image uploads need OCR. Install tesseract and pytesseract, "
             "or paste the text instead."
         )
+        return doc
+    try:
+        img = Image.open(io.BytesIO(data))
+        text = pytesseract.image_to_string(img).strip()
+    except Exception as exc:
+        raise ParseError(
+            "This file could not be read as an image. It may be corrupt "
+            "or in an unsupported format; try a PNG or JPEG, or paste the text."
+        ) from exc
+    doc.pages.append(ParsedPage(number=1, text=text))
+    if not text:
+        doc.warnings.append("OCR found no readable text in this image.")
     return doc

@@ -19,7 +19,13 @@ from pydantic import BaseModel
 
 from app.ai.pipeline import Analyzer
 from app.export.reports import to_markdown
-from app.parsing.parser import ParsedDocument, parse_bytes, parse_text
+from app.parsing.parser import (
+    ParsedDocument,
+    ParsedPage,
+    ParseError,
+    parse_bytes,
+    parse_text,
+)
 from app.privacy.redaction import redact
 from app.schemas import (
     AnalysisResult,
@@ -61,12 +67,44 @@ class AnalyzeOut(BaseModel):
     stored: bool = False
 
 
+MAX_UPLOAD_BYTES = 20 * 1024 * 1024
+
+
+async def _read_upload(file: UploadFile) -> bytes:
+    """Read an upload in chunks, rejecting oversized files before they are
+    fully buffered in memory."""
+    chunks: list[bytes] = []
+    total = 0
+    while chunk := await file.read(1024 * 1024):
+        total += len(chunk)
+        if total > MAX_UPLOAD_BYTES:
+            raise HTTPException(413, "File is larger than 20 MB.")
+        chunks.append(chunk)
+    return b"".join(chunks)
+
+
+def _parse_upload(data: bytes, filename: str) -> ParsedDocument:
+    try:
+        return parse_bytes(data, filename)
+    except ParseError as exc:
+        raise HTTPException(422, str(exc))
+
+
 def _run(doc: ParsedDocument, redact_first: bool, store: bool) -> AnalyzeOut:
     if not doc.full_text.strip():
         raise HTTPException(422, "No readable text was found in this document.")
     if redact_first:
-        redacted = redact(doc.full_text)
-        doc = parse_text(redacted.redacted_text, filename=doc.filename, source=doc.source)
+        # Redact page-by-page so citations keep their page numbers, and keep
+        # the original parse warnings (e.g. OCR notices).
+        doc = ParsedDocument(
+            filename=doc.filename,
+            pages=[
+                ParsedPage(number=p.number, text=redact(p.text).redacted_text)
+                for p in doc.pages
+            ],
+            source=doc.source,
+            warnings=doc.warnings,
+        )
     result = analyzer.analyze(doc)
     doc_id = None
     if store:
@@ -86,10 +124,8 @@ async def analyze_upload(
     redact_first: bool = Form(False),
     store: bool = Form(False),
 ) -> AnalyzeOut:
-    data = await file.read()
-    if len(data) > 20 * 1024 * 1024:
-        raise HTTPException(413, "File is larger than 20 MB.")
-    doc = parse_bytes(data, file.filename or "upload")
+    data = await _read_upload(file)
+    doc = _parse_upload(data, file.filename or "upload")
     return _run(doc, redact_first, store)
 
 
@@ -110,8 +146,8 @@ def explain_passage(body: ExplainRequest) -> ExplainResponse:
 async def compare(
     old_file: UploadFile = File(...), new_file: UploadFile = File(...)
 ) -> ComparisonResult:
-    old_doc = parse_bytes(await old_file.read(), old_file.filename or "old")
-    new_doc = parse_bytes(await new_file.read(), new_file.filename or "new")
+    old_doc = _parse_upload(await _read_upload(old_file), old_file.filename or "old")
+    new_doc = _parse_upload(await _read_upload(new_file), new_file.filename or "new")
     if not old_doc.full_text.strip() or not new_doc.full_text.strip():
         raise HTTPException(422, "One of the documents has no readable text.")
     return analyzer.compare(old_doc, new_doc)
@@ -187,13 +223,14 @@ def report_markdown(body: ReportIn) -> str:
     return to_markdown(body.result)
 
 
-if STATIC_DIR.is_dir():
-    app.mount("/", StaticFiles(directory=STATIC_DIR, html=True), name="static")
-
-
+# Routes must be registered before the catch-all static mount at "/".
 @app.get("/favicon.ico", include_in_schema=False)
 def favicon():
     path = STATIC_DIR / "favicon.ico"
     if path.is_file():
         return FileResponse(path)
     raise HTTPException(404)
+
+
+if STATIC_DIR.is_dir():
+    app.mount("/", StaticFiles(directory=STATIC_DIR, html=True), name="static")

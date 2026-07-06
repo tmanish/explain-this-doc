@@ -248,7 +248,8 @@ async function ok(r){
 }
 
 // ---- rendering ----
-function esc(s){ const d=document.createElement("div"); d.textContent=s??""; return d.innerHTML; }
+// Escapes quotes too: esc() output is used inside HTML attributes (data-q).
+function esc(s){ return String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
 
 function handle(data, rawText, demoId){
   current = data; currentType = data.result.classification.document_type;

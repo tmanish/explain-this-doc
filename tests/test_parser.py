@@ -1,4 +1,6 @@
-from app.parsing.parser import parse_bytes, parse_text
+import pytest
+
+from app.parsing.parser import ParseError, parse_bytes, parse_text
 
 
 def test_plain_text_roundtrip():
@@ -30,3 +32,8 @@ def test_pdf_extraction():
 def test_bytes_route_text():
     doc = parse_bytes(b"just some plain text", "notes.txt")
     assert doc.full_text == "just some plain text"
+
+
+def test_corrupt_pdf_raises_parse_error():
+    with pytest.raises(ParseError):
+        parse_bytes(b"%PDF-1.7 this is not really a pdf", "broken.pdf")

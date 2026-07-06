@@ -57,7 +57,7 @@ class AnthropicProvider(LLMProvider):
         self.api_key = os.environ.get("ANTHROPIC_API_KEY")
         if not self.api_key:
             raise ProviderError("ANTHROPIC_API_KEY is not set")
-        self.model = model or os.environ.get("ETD_MODEL", "claude-sonnet-4-6")
+        self.model = model or os.environ.get("ETD_MODEL", "claude-sonnet-5")
 
     def complete(self, prompt: str, max_tokens: int = 2000) -> str:
         resp = httpx.post(
@@ -94,7 +94,8 @@ class OpenAIProvider(LLMProvider):
             headers={"Authorization": f"Bearer {self.api_key}"},
             json={
                 "model": self.model,
-                "max_tokens": max_tokens,
+                # max_tokens is deprecated on newer OpenAI chat models
+                "max_completion_tokens": max_tokens,
                 "messages": [{"role": "user", "content": prompt}],
             },
             timeout=120,
