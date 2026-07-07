@@ -85,6 +85,31 @@ def test_upload_txt():
     assert r.status_code == 200
 
 
+def test_engine_endpoints(monkeypatch):
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
+    try:
+        r = client.get("/api/engine")
+        assert r.status_code == 200
+        ids = {c["id"] for c in r.json()["choices"]}
+        assert {"none", "anthropic", "openai", "openrouter", "ollama"} <= ids
+
+        # missing key and unknown provider are rejected; engine stays local
+        assert client.post("/api/engine", json={"provider": "anthropic"}).status_code == 422
+        assert client.post("/api/engine", json={"provider": "openrouter"}).status_code == 422
+        assert client.post("/api/engine", json={"provider": "bogus"}).status_code == 422
+        assert client.get("/api/health").json()["engine"].startswith("heuristic")
+
+        # a pasted key switches the engine at runtime
+        r = client.post("/api/engine", json={"provider": "anthropic", "api_key": "sk-test"})
+        assert r.status_code == 200
+        assert r.json()["mode"] == "llm (anthropic)"
+    finally:
+        # restore local mode for the rest of the suite
+        assert client.post("/api/engine", json={"provider": "none"}).status_code == 200
+
+
 def test_upload_corrupt_pdf_rejected():
     r = client.post(
         "/api/analyze/upload",

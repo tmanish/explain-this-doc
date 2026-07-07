@@ -53,10 +53,13 @@ class LLMProvider(ABC):
 class AnthropicProvider(LLMProvider):
     name = "anthropic"
 
-    def __init__(self, model: str | None = None):
-        self.api_key = os.environ.get("ANTHROPIC_API_KEY")
+    def __init__(self, model: str | None = None, api_key: str | None = None):
+        self.api_key = api_key or os.environ.get("ANTHROPIC_API_KEY")
         if not self.api_key:
-            raise ProviderError("ANTHROPIC_API_KEY is not set")
+            raise ProviderError(
+                "No Anthropic API key. Paste one in the engine settings "
+                "or set ANTHROPIC_API_KEY."
+            )
         self.model = model or os.environ.get("ETD_MODEL", "claude-sonnet-5")
 
     def complete(self, prompt: str, max_tokens: int = 2000) -> str:
@@ -82,10 +85,13 @@ class AnthropicProvider(LLMProvider):
 class OpenAIProvider(LLMProvider):
     name = "openai"
 
-    def __init__(self, model: str | None = None):
-        self.api_key = os.environ.get("OPENAI_API_KEY")
+    def __init__(self, model: str | None = None, api_key: str | None = None):
+        self.api_key = api_key or os.environ.get("OPENAI_API_KEY")
         if not self.api_key:
-            raise ProviderError("OPENAI_API_KEY is not set")
+            raise ProviderError(
+                "No OpenAI API key. Paste one in the engine settings "
+                "or set OPENAI_API_KEY."
+            )
         self.model = model or os.environ.get("ETD_MODEL", "gpt-4o-mini")
 
     def complete(self, prompt: str, max_tokens: int = 2000) -> str:
@@ -104,10 +110,38 @@ class OpenAIProvider(LLMProvider):
         return resp.json()["choices"][0]["message"]["content"]
 
 
+class OpenRouterProvider(LLMProvider):
+    name = "openrouter"
+
+    def __init__(self, model: str | None = None, api_key: str | None = None):
+        self.api_key = api_key or os.environ.get("OPENROUTER_API_KEY")
+        if not self.api_key:
+            raise ProviderError(
+                "No OpenRouter API key. Paste one in the engine settings "
+                "or set OPENROUTER_API_KEY."
+            )
+        self.model = model or os.environ.get("ETD_MODEL", "openrouter/auto")
+
+    def complete(self, prompt: str, max_tokens: int = 2000) -> str:
+        resp = httpx.post(
+            "https://openrouter.ai/api/v1/chat/completions",
+            headers={"Authorization": f"Bearer {self.api_key}"},
+            json={
+                "model": self.model,
+                "max_tokens": max_tokens,
+                "messages": [{"role": "user", "content": prompt}],
+            },
+            timeout=120,
+        )
+        resp.raise_for_status()
+        return resp.json()["choices"][0]["message"]["content"]
+
+
 class OllamaProvider(LLMProvider):
     name = "ollama"
 
-    def __init__(self, model: str | None = None):
+    def __init__(self, model: str | None = None, api_key: str | None = None):
+        # api_key accepted for a uniform constructor signature; Ollama needs none
         self.host = os.environ.get("OLLAMA_HOST", "http://localhost:11434")
         self.model = model or os.environ.get("ETD_MODEL", "llama3.1")
 
@@ -126,16 +160,28 @@ class OllamaProvider(LLMProvider):
         return resp.json().get("response", "")
 
 
-def get_provider() -> LLMProvider | None:
-    """Return the configured provider, or None for local-only mode."""
-    choice = os.environ.get("ETD_PROVIDER", "none").lower()
+def make_provider(
+    choice: str, api_key: str | None = None, model: str | None = None
+) -> LLMProvider | None:
+    """Build a provider by name, or None for local-only mode.
+
+    A key passed here (e.g. from the UI) is held in process memory only;
+    it is never written to disk or logged.
+    """
+    choice = (choice or "none").lower()
     if choice in ("", "none", "local"):
         return None
     registry = {
         "anthropic": AnthropicProvider,
         "openai": OpenAIProvider,
+        "openrouter": OpenRouterProvider,
         "ollama": OllamaProvider,
     }
     if choice not in registry:
-        raise ProviderError(f"Unknown ETD_PROVIDER: {choice}")
-    return registry[choice]()
+        raise ProviderError(f"Unknown provider: {choice}")
+    return registry[choice](model=model, api_key=api_key)
+
+
+def get_provider() -> LLMProvider | None:
+    """Return the env-configured provider, or None for local-only mode."""
+    return make_provider(os.environ.get("ETD_PROVIDER", "none"))

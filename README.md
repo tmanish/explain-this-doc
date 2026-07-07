@@ -57,9 +57,9 @@ Two engines, one contract. If no LLM provider is configured (the default), every
 
 - Python 3.10+ (3.12 recommended), FastAPI, Pydantic v2
 - PyMuPDF for PDF extraction, pytesseract (optional) for scans and images
-- Provider adapters: Anthropic, OpenAI, Ollama, or none (local mode)
+- Provider adapters: Anthropic, OpenAI, OpenRouter, Ollama, or none (local mode)
 - Single-file vanilla JS frontend, dark mode, no external dependencies
-- pytest, 33 tests
+- pytest, 34 tests
 
 ## Screenshots
 
@@ -80,8 +80,12 @@ Open http://localhost:8000. Local mode works immediately; try the five built-in 
 
 **Enable an LLM provider (optional):**
 
+Pick an engine on the landing page — Local, Anthropic, OpenAI, OpenRouter, or Ollama — and
+paste an API key there (held in server memory only, never stored or logged).
+Or configure it via environment variables before starting:
+
 ```bash
-export ETD_PROVIDER=anthropic   # or openai, ollama
+export ETD_PROVIDER=anthropic   # or openai, openrouter, ollama
 export ANTHROPIC_API_KEY=sk-...
 # optional: export ETD_MODEL=claude-sonnet-5
 ```

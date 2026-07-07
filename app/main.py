@@ -18,6 +18,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from app.ai.pipeline import Analyzer
+from app.ai.providers import ProviderError, make_provider
 from app.export.reports import to_markdown
 from app.parsing.parser import (
     ParsedDocument,
@@ -116,6 +117,47 @@ def _run(doc: ParsedDocument, redact_first: bool, store: bool) -> AnalyzeOut:
 @app.get("/api/health")
 def health() -> dict:
     return {"status": "ok", "engine": analyzer.mode}
+
+
+ENGINE_CHOICES = [
+    {"id": "none", "label": "Local (offline)", "needs_key": False,
+     "hint": "Rule-based analysis. Nothing leaves this machine."},
+    {"id": "anthropic", "label": "Anthropic Claude", "needs_key": True,
+     "hint": "Default model claude-sonnet-5."},
+    {"id": "openai", "label": "OpenAI", "needs_key": True,
+     "hint": "Default model gpt-4o-mini."},
+    {"id": "openrouter", "label": "OpenRouter", "needs_key": True,
+     "hint": "One key for many models. Default openrouter/auto; "
+             "set any model like anthropic/claude-sonnet-4.5."},
+    {"id": "ollama", "label": "Ollama (local server)", "needs_key": False,
+     "hint": "Default model llama3.1 via localhost:11434."},
+]
+
+
+class EngineIn(BaseModel):
+    provider: str
+    api_key: str | None = None
+    model: str | None = None
+
+
+@app.get("/api/engine")
+def get_engine() -> dict:
+    return {"mode": analyzer.mode, "choices": ENGINE_CHOICES}
+
+
+@app.post("/api/engine")
+def set_engine(body: EngineIn) -> dict:
+    """Switch the analysis engine at runtime. A pasted API key is held in
+    process memory only — never logged or written to disk."""
+    global analyzer
+    try:
+        provider = make_provider(
+            body.provider, api_key=body.api_key or None, model=body.model or None
+        )
+    except ProviderError as exc:
+        raise HTTPException(422, str(exc))
+    analyzer = Analyzer(provider=provider, auto=False)
+    return {"mode": analyzer.mode}
 
 
 @app.post("/api/analyze/upload", response_model=AnalyzeOut)
