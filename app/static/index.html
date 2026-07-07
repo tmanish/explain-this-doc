@@ -16,7 +16,8 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
-body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.55}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.55;
+  padding-bottom:32px}
 button{font-family:var(--sans);cursor:pointer}
 a{color:var(--accent)}
 
@@ -125,6 +126,9 @@ ul.plain li .why{display:block;color:var(--faint);font-size:12.5px}
 .explain-out .close{position:absolute;top:8px;right:12px;background:none;border:none;color:var(--faint);font-size:16px}
 .spinner{display:none;color:var(--muted);font-size:13.5px;padding:20px 0}
 .spinner.on{display:block}
+.site-footer{text-align:center;padding:26px 24px 8px;color:var(--faint);font-size:11.5px;font-family:var(--mono)}
+.site-footer a{color:var(--faint);text-decoration:none}
+.site-footer a:hover{color:var(--accent)}
 @media (max-width:900px){.workspace{grid-template-columns:1fr;height:auto}
   .doc-pane{max-height:38vh;border-right:none;border-bottom:1px solid var(--line)}}
 @media (prefers-reduced-motion: no-preference){.card{animation:rise .3s ease both}
@@ -206,6 +210,10 @@ ul.plain li .why{display:block;color:var(--faint);font-size:12.5px}
   </div>
   <div class="results" id="resultsPane"></div>
 </main>
+
+<footer class="site-footer">
+  <a href="https://github.com/tmanish/explain-this-doc">github.com/tmanish/explain-this-doc</a>
+</footer>
 
 <div class="popover" id="popover">
   <button data-mode="explain">Explain this section</button>

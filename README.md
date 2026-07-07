@@ -41,8 +41,8 @@ Upload (PDF / image / text)
         |
    Analyzer facade
      |-- LLM engine ........... classify -> summarize -> extract -> risks
-     |     (Anthropic / OpenAI     -> checklist -> questions, all JSON-schema prompts
-     |      / Ollama adapter)
+     |     (Anthropic / OpenAI      -> checklist -> questions, all JSON-schema prompts
+     |      / OpenRouter / Ollama)
      |-- CitationMapper ....... verifies every model quote against the real text;
      |                          unverifiable quotes are stripped, never trusted
      |-- Heuristic engine ..... fully offline: keyword classifier, regex money/date
@@ -63,7 +63,7 @@ Two engines, one contract. If no LLM provider is configured (the default), every
 
 ## Screenshots
 
-*(placeholder: intake screen, lease analysis, select-to-explain popover)*
+![Explain This Document — intake screen with engine picker](docs/explain-this-doc-screenshot.png)
 
 ## Setup
 
@@ -106,7 +106,7 @@ docker run -p 8000:8000 explain-this-doc
 
 ## Usage
 
-Web UI: drop a file, paste text, or pick a sample. Toggle "Mask sensitive details" to redact SSNs, account numbers, phones, and addresses before analysis. Select any passage in the document pane to explain it. Export Markdown or JSON from the results pane.
+Web UI: drop a file, paste text, or pick a sample. Toggle "Mask sensitive details" to redact SSNs, account numbers, phones, and addresses before analysis. Pick an analysis engine (and paste an API key) right on the landing page. Select any passage in the document pane to explain it. Export Markdown or JSON from the results pane.
 
 API:
 
@@ -129,6 +129,11 @@ curl -X POST localhost:8000/api/compare -F old_file=@old.pdf -F new_file=@new.pd
 
 # Built-in synthetic samples
 curl -X POST localhost:8000/api/demo/lease
+
+# Switch the analysis engine at runtime (key held in memory only)
+curl -X POST localhost:8000/api/engine \
+  -H 'Content-Type: application/json' \
+  -d '{"provider": "anthropic", "api_key": "sk-..."}'
 ```
 
 Interactive API docs at `/docs`. Example output for the sample lease is in [`examples/lease.report.md`](examples/lease.report.md).
