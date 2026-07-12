@@ -59,7 +59,7 @@ Two engines, one contract. If no LLM provider is configured (the default), every
 - PyMuPDF for PDF extraction, pytesseract (optional) for scans and images
 - Provider adapters: Anthropic, OpenAI, OpenRouter, Ollama, or none (local mode)
 - Single-file vanilla JS frontend, dark mode, no external dependencies
-- pytest, 34 tests
+- pytest, 36 tests
 
 ## Screenshots
 

@@ -28,7 +28,12 @@ header .logo{width:34px;height:34px;color:var(--cyan);flex-shrink:0}
 header .sub{color:var(--faint);font-size:12.5px}
 header .engine{margin-left:auto;font-family:var(--mono);font-size:11.5px;color:var(--muted);
   border:1px solid var(--line);border-radius:20px;padding:4px 12px;white-space:nowrap;flex-shrink:0}
-@media (max-width:760px){header h1{font-size:20px}header .engine{white-space:normal}}
+@media (max-width:760px){
+  header{flex-wrap:wrap;row-gap:8px}
+  header h1{font-size:20px}
+  header .titles{flex:1 1 calc(100% - 50px);min-width:0}
+  header .engine{margin-left:50px}
+}
 
 .intake{max-width:820px;margin:48px auto;padding:0 24px}
 .intake h2{font-size:26px;font-weight:600;margin-bottom:8px}
@@ -147,7 +152,7 @@ ul.plain li .why{display:block;color:var(--faint);font-size:12.5px}
     <path d="M12 3v18"/>
     <path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/>
   </svg>
-  <div>
+  <div class="titles">
     <h1>Explain This Document Like I'm <span class="hl">Human</span></h1>
     <div class="sub">Give me the document. I'll tell you what matters, what it means, and what to look at carefully.</div>
   </div>
@@ -185,20 +190,21 @@ ul.plain li .why{display:block;color:var(--faint);font-size:12.5px}
     <div id="engineChoices"></div>
     <div class="hint" id="engineHint"></div>
     <div class="row" id="engineKeyRow" style="display:none">
-      <input type="password" id="engineKey" autocomplete="off"
+      <input type="password" id="engineKey" autocomplete="off" aria-label="API key"
              placeholder="API key — kept in memory only, never stored">
-      <input type="text" id="engineModel" placeholder="Model (optional)">
+      <input type="text" id="engineModel" aria-label="Model name (optional)" placeholder="Model (optional)">
     </div>
     <div class="row">
       <button class="btn" id="engineApply">Use this engine</button>
-      <span class="engine-status" id="engineStatus"></span>
+      <span class="engine-status" id="engineStatus" aria-live="polite"></span>
     </div>
   </div>
 
   <p class="privacy">Privacy: documents are processed in memory and not stored unless you opt in.
   Local mode keeps everything on this machine. This tool explains documents; it does not give
   legal, medical, financial, or professional advice.</p>
-  <div class="spinner" id="spinner">Reading the document...</div>
+  <div class="warn" id="intakeError" role="alert" style="display:none"></div>
+  <div class="spinner" id="spinner" aria-live="polite">Reading the document...</div>
 </section>
 
 <main class="workspace" id="workspace">
@@ -258,7 +264,7 @@ function engineChoice(id){ return engineChoices.find(c=>c.id===id); }
 
 function renderEngineChoices(){
   $("engineChoices").innerHTML = engineChoices.map(c=>
-    `<button class="chip${c.id===selectedEngine?" selected":""}" data-id="${esc(c.id)}">${esc(c.label)}</button>`).join("");
+    `<button class="chip${c.id===selectedEngine?" selected":""}" aria-pressed="${c.id===selectedEngine}" data-id="${esc(c.id)}">${esc(c.label)}</button>`).join("");
   $("engineChoices").querySelectorAll(".chip").forEach(b=>b.onclick=()=>{
     selectedEngine = b.dataset.id;
     renderEngineChoices();
@@ -284,7 +290,8 @@ loadEngine();
 $("engineApply").onclick = async ()=>{
   const status = $("engineStatus");
   status.classList.remove("err");
-  status.textContent = "Switching engine...";
+  status.textContent = selectedEngine==="none" ? "Switching engine..." : "Testing the connection...";
+  $("engineApply").disabled = true;
   try{
     const r = await fetch("/api/engine", {method:"POST",
       headers:{"Content-Type":"application/json"},
@@ -292,21 +299,31 @@ $("engineApply").onclick = async ()=>{
         provider: selectedEngine,
         api_key: $("engineKey").value.trim() || null,
         model: $("engineModel").value.trim() || null,
+        verify: true,   // fail here, visibly, rather than degrade silently later
       })});
     const d = await ok(r);
     $("engine").textContent = d.mode;
     $("engineKey").value = "";   // don't keep the key in the DOM
-    status.textContent = "Now using: " + d.mode;
+    status.textContent = selectedEngine==="none" ? "Now using: " + d.mode
+      : "Connected. Now using: " + d.mode;
   }catch(err){
     status.classList.add("err");
     status.textContent = err.message;
+  }finally{
+    $("engineApply").disabled = false;
   }
 };
 
 fetch("/api/demo").then(r=>r.json()).then(list=>{
-  $("demoList").innerHTML = list.map(d=>`<button class="chip" data-id="${d.id}">${d.name}</button>`).join("");
+  $("demoList").innerHTML = list.map(d=>`<button class="chip" data-id="${esc(d.id)}">${esc(d.name)}</button>`).join("");
   $("demoList").querySelectorAll(".chip").forEach(b=>b.onclick=()=>runDemo(b.dataset.id));
-});
+}).catch(()=>{ $("demoList").textContent = "Sample documents could not be loaded."; });
+
+function showError(msg){
+  const el = $("intakeError");
+  el.textContent = msg;
+  el.style.display = msg ? "block" : "none";
+}
 
 // ---- intake wiring ----
 const dz = $("dropzone");
@@ -319,7 +336,7 @@ $("fileInput").onchange = e=>{ if(e.target.files[0]) uploadFile(e.target.files[0
 $("pasteBtn").onclick = ()=>{ $("pasteArea").style.display="block"; $("analyzePaste").style.display="inline-block"; $("pasteArea").focus(); };
 $("analyzePaste").onclick = ()=> analyzeText($("pasteArea").value);
 
-function busy(on){ $("spinner").classList.toggle("on", on); }
+function busy(on){ $("spinner").classList.toggle("on", on); if(on) showError(""); }
 
 async function uploadFile(file){
   busy(true);
@@ -330,18 +347,18 @@ async function uploadFile(file){
   try{
     const r = await fetch("/api/analyze/upload", {method:"POST", body:fd});
     handle(await ok(r), null);
-  }catch(err){ alert(err.message); } finally{ busy(false); }
+  }catch(err){ showError(err.message); } finally{ busy(false); }
 }
 
 async function analyzeText(text){
-  if(!text.trim()){ alert("Paste some text first."); return; }
+  if(!text.trim()){ showError("Paste some text first."); return; }
   busy(true);
   try{
     const r = await fetch("/api/analyze/text", {method:"POST",
       headers:{"Content-Type":"application/json"},
       body: JSON.stringify({text, redact_first: $("redactToggle").checked})});
     handle(await ok(r), text);
-  }catch(err){ alert(err.message); } finally{ busy(false); }
+  }catch(err){ showError(err.message); } finally{ busy(false); }
 }
 
 async function runDemo(id){
@@ -349,7 +366,7 @@ async function runDemo(id){
   try{
     const r = await fetch(`/api/demo/${id}`, {method:"POST"});
     handle(await ok(r), null, id);
-  }catch(err){ alert(err.message); } finally{ busy(false); }
+  }catch(err){ showError(err.message); } finally{ busy(false); }
 }
 
 async function ok(r){
@@ -376,10 +393,16 @@ function render(data){
   const r = data.result;
   const pane = $("resultsPane");
   const warn = (data.warnings||[]).map(w=>`<div class="warn">${esc(w)}</div>`).join("");
+  // If an AI engine is selected but this result came from the offline engine,
+  // the provider call failed — say so instead of degrading silently.
+  const fellBack = $("engine").textContent.startsWith("llm") && r.engine.startsWith("heuristic")
+    ? `<div class="warn">The AI engine could not be reached for this analysis, so the local
+       offline engine was used instead. Check the engine settings below the intake screen
+       (your key, model name, or connection) and try again.</div>` : "";
   const conf = Math.round(r.overall_confidence*100);
 
   pane.innerHTML = `
-    ${warn}
+    ${warn}${fellBack}
     <div class="card">
       <div class="type-line">${esc(r.classification.statement)}</div>
       <div class="conf">type confidence ${Math.round(r.classification.confidence*100)}% &middot; overall extraction confidence ${conf}% &middot; ${esc(r.engine)}</div>

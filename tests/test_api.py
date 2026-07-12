@@ -110,6 +110,54 @@ def test_engine_endpoints(monkeypatch):
         assert client.post("/api/engine", json={"provider": "none"}).status_code == 200
 
 
+def test_engine_verify(monkeypatch):
+    import app.main as m
+
+    class BadProvider:
+        name = "fake"
+
+        def complete_json(self, prompt, max_tokens=2000):
+            raise RuntimeError("invalid api key")
+
+    class GoodProvider(BadProvider):
+        def complete_json(self, prompt, max_tokens=2000):
+            return {"ok": True}
+
+    # verification failure rejects the switch and keeps the current engine
+    monkeypatch.setattr(m, "make_provider", lambda *a, **k: BadProvider())
+    r = client.post("/api/engine",
+                    json={"provider": "anthropic", "api_key": "x", "verify": True})
+    assert r.status_code == 422
+    assert "Could not verify" in r.json()["detail"]
+    assert client.get("/api/health").json()["engine"].startswith("heuristic")
+
+    # verification success switches the engine
+    monkeypatch.setattr(m, "make_provider", lambda *a, **k: GoodProvider())
+    r = client.post("/api/engine",
+                    json={"provider": "anthropic", "api_key": "x", "verify": True})
+    assert r.status_code == 200
+    assert r.json()["mode"] == "llm (fake)"
+
+    monkeypatch.undo()
+    assert client.post("/api/engine", json={"provider": "none"}).status_code == 200
+
+
+def test_store_eviction(monkeypatch):
+    import app.main as m
+
+    monkeypatch.setattr(m, "MAX_STORED_DOCS", 2)
+    ids = []
+    for i in range(3):
+        r = client.post("/api/analyze/text",
+                        json={"text": f"Lease with monthly rent of ${i}50.00.", "store": True})
+        ids.append(r.json()["document_id"])
+    # oldest evicted, newest kept
+    assert client.get(f"/api/documents/{ids[0]}").status_code == 404
+    assert client.get(f"/api/documents/{ids[2]}").status_code == 200
+    for doc_id in ids[1:]:
+        client.delete(f"/api/documents/{doc_id}")
+
+
 def test_upload_corrupt_pdf_rejected():
     r = client.post(
         "/api/analyze/upload",

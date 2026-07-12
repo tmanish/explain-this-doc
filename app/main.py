@@ -49,8 +49,10 @@ analyzer = Analyzer()
 DEMO_DIR = Path(__file__).resolve().parent.parent / "demo"
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 
-# Opt-in in-memory store: {id: (ParsedDocument, AnalysisResult)}
+# Opt-in in-memory store: {id: (ParsedDocument, AnalysisResult)}.
+# Capped so a long-running server can't grow without bound; oldest evicted first.
 _store: dict[str, tuple[ParsedDocument, AnalysisResult]] = {}
+MAX_STORED_DOCS = 100
 
 
 class TextIn(BaseModel):
@@ -111,6 +113,8 @@ def _run(doc: ParsedDocument, redact_first: bool, store: bool) -> AnalyzeOut:
     if store:
         doc_id = uuid.uuid4().hex[:12]
         _store[doc_id] = (doc, result)
+        while len(_store) > MAX_STORED_DOCS:
+            _store.pop(next(iter(_store)))
     return AnalyzeOut(result=result, document_text=doc.full_text, document_id=doc_id, warnings=doc.warnings, stored=store)
 
 
@@ -138,6 +142,7 @@ class EngineIn(BaseModel):
     provider: str
     api_key: str | None = None
     model: str | None = None
+    verify: bool = False
 
 
 @app.get("/api/engine")
@@ -156,6 +161,20 @@ def set_engine(body: EngineIn) -> dict:
         )
     except ProviderError as exc:
         raise HTTPException(422, str(exc))
+    if body.verify and provider is not None:
+        # One tiny round-trip so a bad key or unreachable host fails HERE,
+        # visibly, instead of silently degrading every later analysis.
+        try:
+            provider.complete_json(
+                'Reply with exactly this JSON and nothing else: {"ok": true}',
+                max_tokens=64,
+            )
+        except Exception as exc:
+            raise HTTPException(
+                422,
+                f"Could not verify the {body.provider} connection: {exc} — "
+                "check the key and model, then try again.",
+            )
     analyzer = Analyzer(provider=provider, auto=False)
     return {"mode": analyzer.mode}
 
