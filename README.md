@@ -6,6 +6,8 @@ Leases, insurance policies, medical bills, bank notices, employment agreements, 
 
 This app answers those questions in plain English, with every claim grounded in a quote from the document itself.
 
+📱 A native iOS app is in progress at [explain-this-doc-ios](https://github.com/tmanish/explain-this-doc-ios) — same analysis engine, ported to Swift, fully on-device.
+
 ## What it does
 
 Upload a PDF, image, scan, or pasted text and get:
